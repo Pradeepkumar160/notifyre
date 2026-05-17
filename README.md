@@ -2,8 +2,13 @@
 
 > A production-ready microservices notification engine. Send emails and SMS at scale with automatic retries, dead-letter queues, full delivery tracking — all running in Docker with a beautiful web dashboard.
 
-![Dashboard Preview](https://i.imgur.com/placeholder.png)
+## 📸 Screenshots
 
+![Dashboard](./screenshots/dashboard.png)
+![Send](./screenshots/send.png)
+![History](./screenshots/history.png)
+![Logs](./screenshots/logs.png)
+![Config](./screenshots/config.png)
 ---
 
 ## ✨ Features
