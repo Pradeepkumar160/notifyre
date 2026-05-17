@@ -1,0 +1,23 @@
+{
+  "name": "notifyre-api-service",
+  "version": "1.0.0",
+  "description": "Notifyre API Service - Event-Driven Notification Engine",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "amqplib": "^0.10.3",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0",
+    "prisma": "^5.10.0"
+  }
+}

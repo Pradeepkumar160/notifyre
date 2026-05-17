@@ -1,0 +1,21 @@
+{
+  "name": "notifyre-worker-service",
+  "version": "1.0.0",
+  "description": "Notifyre Worker - Consumes and delivers notifications",
+  "main": "src/worker.js",
+  "scripts": {
+    "start": "node src/worker.js",
+    "prisma:generate": "npx prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "@sendgrid/mail": "^8.1.0",
+    "amqplib": "^0.10.3",
+    "dotenv": "^16.3.1",
+    "twilio": "^5.0.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.10.0"
+  }
+}

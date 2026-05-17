@@ -1,0 +1,14 @@
+{
+  "name": "notifyre-dead-letter-service",
+  "version": "1.0.0",
+  "description": "Notifyre DLQ Monitor - Processes permanently failed messages",
+  "main": "src/dlq.js",
+  "scripts": {
+    "start": "node src/dlq.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0"
+  }
+}

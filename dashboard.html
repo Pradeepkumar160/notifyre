@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Notifyre — Notification Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3d;
+    --border2: #3a3a55;
+    --text: #f0f0f8;
+    --text2: #8888aa;
+    --text3: #55556a;
+    --accent: #7c6ef7;
+    --accent2: #a598ff;
+    --accent-dim: rgba(124,110,247,0.12);
+    --green: #3ddc84;
+    --green-dim: rgba(61,220,132,0.12);
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.12);
+    --red: #ff5a65;
+    --red-dim: rgba(255,90,101,0.12);
+    --blue: #4da6ff;
+    --blue-dim: rgba(77,166,255,0.12);
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  html { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; line-height: 1.6; }
+
+  body { min-height: 100vh; display: flex; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: fixed;
+    height: 100vh;
+    top: 0; left: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+  .logo-tag { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: -2px; }
+
+  .nav-label {
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text3); padding: 0 20px 8px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px; font-weight: 500;
+    color: var(--text2);
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent2); border-left-color: var(--accent); background: var(--accent-dim); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px 0;
+    border-top: 1px solid var(--border);
+  }
+  .api-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-family: 'DM Mono', monospace;
+    color: var(--text3);
+    padding-top: 12px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+  .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* Main content */
+  .main { margin-left: 220px; flex: 1; padding: 32px; min-height: 100vh; }
+
+  /* Pages */
+  .page { display: none; }
+  .page.active { display: block; animation: fadein 0.2s ease; }
+  @keyframes fadein { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+  /* Page header */
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+  }
+  .stat-card.c-purple::before { background: var(--accent); }
+  .stat-card.c-green::before { background: var(--green); }
+  .stat-card.c-amber::before { background: var(--amber); }
+  .stat-card.c-red::before { background: var(--red); }
+  .stat-label { font-size: 11px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 10px; }
+  .stat-value { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
+  .stat-card.c-purple .stat-value { color: var(--accent2); }
+  .stat-card.c-green .stat-value { color: var(--green); }
+  .stat-card.c-amber .stat-value { color: var(--amber); }
+  .stat-card.c-red .stat-value { color: var(--red); }
+  .stat-sub { font-size: 12px; color: var(--text3); margin-top: 6px; }
+
+  /* Two col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-header h2 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .card-header h2 svg { width: 15px; height: 15px; opacity: 0.6; }
+  .card-body { padding: 20px; }
+
+  /* Form elements */
+  label { display: block; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2355556a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .form-group { margin-bottom: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 20px; border-radius: var(--radius);
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); font-size: 12px; padding: 6px 12px; }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+  .btn-ghost svg { width: 13px; height: 13px; }
+
+  /* Alert */
+  .alert { border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-top: 14px; display: none; font-family: 'DM Mono', monospace; }
+  .alert.show { display: block; }
+  .alert-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(61,220,132,0.2); }
+  .alert-error { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,90,101,0.2); }
+
+  /* Badge */
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 10px; border-radius: 999px; font-weight: 500; }
+  .badge-pending { background: var(--amber-dim); color: var(--amber); }
+  .badge-sent, .badge-delivered { background: var(--green-dim); color: var(--green); }
+  .badge-failed { background: var(--red-dim); color: var(--red); }
+  .badge-email { background: var(--blue-dim); color: var(--blue); }
+  .badge-sms { background: var(--accent-dim); color: var(--accent2); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 11px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .td-id { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .td-recipient { color: var(--text); font-weight: 500; }
+  .td-msg { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .td-time { white-space: nowrap; font-family: 'DM Mono', monospace; font-size: 11px; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 13px; font-family: 'DM Mono', monospace; }
+  .empty svg { width: 32px; height: 32px; margin: 0 auto 12px; display: block; opacity: 0.3; }
+
+  /* Logs page */
+  .log-line { font-family: 'DM Mono', monospace; font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 12px; }
+  .log-line:last-child { border-bottom: none; }
+  .log-time { color: var(--text3); flex-shrink: 0; }
+  .log-level-info { color: var(--blue); }
+  .log-level-warn { color: var(--amber); }
+  .log-level-error { color: var(--red); }
+  .log-level-ok { color: var(--green); }
+  .log-msg { color: var(--text2); flex: 1; }
+
+  /* Filter row */
+  .filter-row { display: flex; gap: 10px; align-items: center; }
+  .filter-row select { width: auto; min-width: 130px; font-size: 13px; padding: 7px 32px 7px 12px; }
+  .filter-row input { width: auto; flex: 1; font-size: 13px; padding: 7px 12px; }
+
+  /* Spinner */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* Config page */
+  .config-section { margin-bottom: 28px; }
+  .config-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .config-section h3 svg { width: 14px; height: 14px; opacity: 0.5; }
+  .env-row { display: grid; grid-template-columns: 200px 1fr; gap: 12px; margin-bottom: 10px; align-items: center; }
+  .env-key { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); }
+  .env-val { font-family: 'DM Mono', monospace; font-size: 12px; }
+  .copy-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; color: var(--text3); cursor: pointer; font-size: 11px; font-family: 'DM Mono', monospace; transition: all 0.15s; }
+  .copy-btn:hover { color: var(--text); border-color: var(--border2); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🔔</div>
+    <div>
+      <div class="logo-name">Notifyre</div>
+      <div class="logo-tag">v1.0.0</div>
+    </div>
+  </div>
+
+  <div class="nav-label">Menu</div>
+
+  <div class="nav-item active" onclick="showPage('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </div>
+  <div class="nav-item" onclick="showPage('send')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+    Send Notification
+  </div>
+  <div class="nav-item" onclick="showPage('history')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+    History
+  </div>
+  <div class="nav-item" onclick="showPage('logs')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Live Logs
+  </div>
+  <div class="nav-item" onclick="showPage('config')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    API Config
+  </div>
+
+  <div class="sidebar-footer">
+    <a href="http://localhost:15672" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);text-decoration:none;padding:8px 0;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
+      RabbitMQ UI ↗
+    </a>
+    <div class="api-status">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">Connecting...</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Real-time overview of your notification engine</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card c-purple">
+        <div class="stat-label">Total notifications</div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card c-amber">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="stat-pending">—</div>
+        <div class="stat-sub">In queue</div>
+      </div>
+      <div class="stat-card c-green">
+        <div class="stat-label">Delivered</div>
+        <div class="stat-value" id="stat-delivered">—</div>
+        <div class="stat-sub">Successfully sent</div>
+      </div>
+      <div class="stat-card c-red">
+        <div class="stat-label">Failed</div>
+        <div class="stat-value" id="stat-failed">—</div>
+        <div class="stat-sub">Need attention</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <h2>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+            Quick send
+          </h2>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type</label>
+              <select id="qs-type">
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Recipient</label>
+              <input type="text" id="qs-recipient" placeholder="test@example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="qs-message" placeholder="Your notification message..."></textarea>
+          </div>
+          <button class="btn btn-primary" id="qs-btn" onclick="quickSend()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+            Send Notification
+          </button>
+          <div class="alert alert-success" id="qs-success"></div>
+          <div class="alert alert-error" id="qs-error"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+            Recent activity
+          </h2>
+          <button class="btn btn-ghost" onclick="loadAll()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div id="recent-list">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Loading...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Notification -->
+  <div class="page" id="page-send">
+    <div class="page-header">
+      <h1>Send Notification</h1>
+      <p>Compose and dispatch email or SMS notifications</p>
+    </div>
+    <div style="max-width: 560px;">
+      <div class="card">
+        <div class="card-header"><h2>New Notification</h2></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Notification type</label>
+            <select id="sn-type" onchange="updateRecipientHint()">
+              <option value="email">Email</option>
+              <option value="sms">SMS</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Recipient</label>
+            <input type="text" id="sn-recipient" placeholder="test@example.com" />
+            <div id="sn-hint" style="font-size:11px;color:var(--text3);margin-top:5px;font-family:'DM Mono',monospace;">Format: email address</div>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="sn-message" placeholder="Write your notification message here..." style="min-height:120px;"></textarea>
+          </div>
+          <button class="btn btn-primary" id="sn-btn" onclick="sendNotification()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+            Send Notification
+          </button>
+          <div class="alert alert-success" id="sn-success"></div>
+          <div class="alert alert-error" id="sn-error"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><h2>API Reference</h2></div>
+        <div class="card-body">
+          <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);line-height:1.9;">
+            <div style="color:var(--text3);">POST http://localhost:5000/api/notifications</div>
+            <br>
+            <div><span style="color:var(--accent2);">Content-Type</span>: application/json</div>
+            <br>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;line-height:2;">
+              {<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">"type"</span>: <span style="color:var(--amber);">"email" | "sms"</span>,<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">"recipient"</span>: <span style="color:var(--amber);">"user@example.com"</span>,<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">"message"</span>: <span style="color:var(--amber);">"Your message"</span><br>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="page" id="page-history">
+    <div class="page-header">
+      <h1>Notification History</h1>
+      <p>Browse and filter all sent notifications</p>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="filter-row">
+          <select id="filter-status" onchange="applyFilters()">
+            <option value="">All statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="SENT">Sent</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="FAILED">Failed</option>
+          </select>
+          <select id="filter-type" onchange="applyFilters()">
+            <option value="">All types</option>
+            <option value="email">Email</option>
+            <option value="sms">SMS</option>
+          </select>
+          <input type="text" id="filter-search" placeholder="Search recipient or message..." oninput="applyFilters()" />
+        </div>
+        <button class="btn btn-ghost" onclick="loadAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Type</th>
+              <th>Recipient</th>
+              <th>Message</th>
+              <th>Status</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr><td colspan="6"><div class="empty">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs -->
+  <div class="page" id="page-logs">
+    <div class="page-header">
+      <h1>Live Logs</h1>
+      <p>Simulated log stream from your notification engine</p>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Log stream
+        </h2>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="clearLogs()">Clear</button>
+          <button class="btn btn-ghost" id="log-toggle" onclick="toggleLogs()">Pause</button>
+        </div>
+      </div>
+      <div class="card-body" id="log-container" style="max-height:480px;overflow-y:auto;font-size:12px;"></div>
+    </div>
+  </div>
+
+  <!-- Config -->
+  <div class="page" id="page-config">
+    <div class="page-header">
+      <h1>API Config</h1>
+      <p>Endpoints and environment reference</p>
+    </div>
+    <div style="max-width: 700px;">
+      <div class="card">
+        <div class="card-header"><h2>Endpoints</h2></div>
+        <div class="card-body">
+          <div class="config-section">
+            <table style="font-size:13px;">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-sms">POST</span></td>
+                  <td class="td-id">/api/notifications</td>
+                  <td>Send a notification</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-email">GET</span></td>
+                  <td class="td-id">/api/notifications</td>
+                  <td>List all notifications</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-email">GET</span></td>
+                  <td class="td-id">/api/notifications/:id</td>
+                  <td>Get notification by ID</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-email">GET</span></td>
+                  <td class="td-id">/health</td>
+                  <td>Health check</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><h2>Services</h2></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;">API Service</div>
+                <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text3);">http://localhost:5000</div>
+              </div>
+              <div class="dot online" id="cfg-api-dot" style="width:9px;height:9px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;">RabbitMQ</div>
+                <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text3);">http://localhost:15672 — guest/guest</div>
+              </div>
+              <a href="http://localhost:15672" target="_blank" style="font-size:11px;color:var(--accent2);font-family:'DM Mono',monospace;text-decoration:none;">Open ↗</a>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;">PostgreSQL</div>
+                <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text3);">localhost:5432 — postgres/postgres</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><h2>Docker commands</h2></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+              <code style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);">docker compose up -d</code>
+              <button class="copy-btn" onclick="copyCmd(this, 'docker compose up -d')">copy</button>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+              <code style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);">docker compose down</code>
+              <button class="copy-btn" onclick="copyCmd(this, 'docker compose down')">copy</button>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+              <code style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);">docker compose logs -f api-service</code>
+              <button class="copy-btn" onclick="copyCmd(this, 'docker compose logs -f api-service')">copy</button>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+              <code style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);">docker compose ps</code>
+              <button class="copy-btn" onclick="copyCmd(this, 'docker compose ps')">copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = 'http://localhost:5000';
+let allNotifications = [];
+let logRunning = true;
+let logLines = [];
+
+// Nav
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'history') loadAll();
+}
+
+// API health
+async function checkHealth() {
+  try {
+    const r = await fetch(API + '/health', {signal: AbortSignal.timeout(3000)});
+    const ok = r.ok;
+    document.getElementById('status-dot').className = 'dot' + (ok ? ' online' : '');
+    document.getElementById('status-text').textContent = ok ? 'API online' : 'API error';
+    document.getElementById('cfg-api-dot').className = 'dot' + (ok ? ' online' : '');
+    if (ok) addLog('info', 'Health check passed');
+  } catch {
+    document.getElementById('status-dot').className = 'dot';
+    document.getElementById('status-text').textContent = 'API offline';
+    addLog('error', 'API unreachable at localhost:5000');
+  }
+}
+
+// Load notifications
+async function loadAll() {
+  try {
+    const r = await fetch(API + '/api/notifications?limit=100');
+    const json = await r.json();
+    allNotifications = json.data || json.events || json || [];
+    updateStats(allNotifications);
+    renderRecent(allNotifications);
+    applyFilters();
+    addLog('ok', `Loaded ${allNotifications.length} notifications`);
+  } catch (e) {
+    addLog('error', 'Failed to load notifications: ' + e.message);
+  }
+}
+
+function updateStats(data) {
+  document.getElementById('stat-total').textContent = data.length;
+  document.getElementById('stat-pending').textContent = data.filter(e => e.status === 'PENDING').length;
+  document.getElementById('stat-delivered').textContent = data.filter(e => ['SENT','DELIVERED'].includes(e.status)).length;
+  document.getElementById('stat-failed').textContent = data.filter(e => e.status === 'FAILED').length;
+}
+
+function renderRecent(data) {
+  const el = document.getElementById('recent-list');
+  const recent = data.slice(0, 8);
+  if (!recent.length) {
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>No notifications yet</div>';
+    return;
+  }
+  el.innerHTML = '<div style="padding:0 4px;">' + recent.map(e => `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);">
+      <span class="badge badge-${e.type || ''}">${e.type || '—'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.recipient || ''}</div>
+        <div style="font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.message || ''}</div>
+      </div>
+      <span class="badge badge-${(e.status || '').toLowerCase()}">${e.status || ''}</span>
+    </div>
+  `).join('') + '</div>';
+}
+
+function applyFilters() {
+  const status = document.getElementById('filter-status').value;
+  const type = document.getElementById('filter-type').value;
+  const search = document.getElementById('filter-search').value.toLowerCase();
+  let filtered = allNotifications;
+  if (status) filtered = filtered.filter(e => e.status === status);
+  if (type) filtered = filtered.filter(e => e.type === type);
+  if (search) filtered = filtered.filter(e => (e.recipient || '').toLowerCase().includes(search) || (e.message || '').toLowerCase().includes(search));
+  renderTable(filtered);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('history-tbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty">No notifications found</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(e => {
+    const t = e.createdAt ? new Date(e.createdAt).toLocaleString() : '—';
+    return `<tr>
+      <td class="td-id" title="${e.id || ''}">${(e.id || '').substring(0, 8)}...</td>
+      <td><span class="badge badge-${e.type || ''}">${e.type || '—'}</span></td>
+      <td class="td-recipient">${e.recipient || '—'}</td>
+      <td class="td-msg" title="${e.message || ''}">${e.message || '—'}</td>
+      <td><span class="badge badge-${(e.status || '').toLowerCase()}">${e.status || '—'}</span></td>
+      <td class="td-time">${t}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Send
+async function doSend(type, recipient, message, btnId, successId, errorId) {
+  const btn = document.getElementById(btnId);
+  const successEl = document.getElementById(successId);
+  const errorEl = document.getElementById(errorId);
+  successEl.classList.remove('show');
+  errorEl.classList.remove('show');
+  if (!recipient.trim() || !message.trim()) {
+    errorEl.textContent = 'Please fill in all fields.';
+    errorEl.classList.add('show');
+    return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending...';
+  try {
+    const r = await fetch(API + '/api/notifications', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({type, recipient, message})
+    });
+    const data = await r.json();
+    if (r.ok && data.success) {
+      successEl.textContent = 'Queued! Event ID: ' + data.eventId;
+      successEl.classList.add('show');
+      addLog('ok', `Notification sent [${type}] → ${recipient} (ID: ${data.eventId.substring(0,8)}...)`);
+      setTimeout(() => loadAll(), 800);
+    } else {
+      errorEl.textContent = data.error || 'Send failed.';
+      errorEl.classList.add('show');
+      addLog('error', 'Send failed: ' + (data.error || 'unknown'));
+    }
+  } catch (e) {
+    errorEl.textContent = 'Cannot reach API at localhost:5000';
+    errorEl.classList.add('show');
+    addLog('error', e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg> Send Notification';
+  }
+}
+
+function quickSend() {
+  doSend(
+    document.getElementById('qs-type').value,
+    document.getElementById('qs-recipient').value,
+    document.getElementById('qs-message').value,
+    'qs-btn', 'qs-success', 'qs-error'
+  );
+}
+
+function sendNotification() {
+  doSend(
+    document.getElementById('sn-type').value,
+    document.getElementById('sn-recipient').value,
+    document.getElementById('sn-message').value,
+    'sn-btn', 'sn-success', 'sn-error'
+  );
+}
+
+function updateRecipientHint() {
+  const t = document.getElementById('sn-type').value;
+  document.getElementById('sn-hint').textContent = t === 'email' ? 'Format: email address (e.g. user@example.com)' : 'Format: E.164 phone number (e.g. +919876543210)';
+  document.getElementById('sn-recipient').placeholder = t === 'email' ? 'user@example.com' : '+919876543210';
+}
+
+// Logs
+function addLog(level, msg) {
+  if (!logRunning) return;
+  const now = new Date().toLocaleTimeString();
+  const line = {time: now, level, msg};
+  logLines.push(line);
+  if (logLines.length > 200) logLines.shift();
+  const container = document.getElementById('log-container');
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">${now}</span><span class="log-level-${level}">[${level.toUpperCase()}]</span><span class="log-msg">${msg}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function clearLogs() {
+  logLines = [];
+  document.getElementById('log-container').innerHTML = '';
+}
+
+function toggleLogs() {
+  logRunning = !logRunning;
+  document.getElementById('log-toggle').textContent = logRunning ? 'Pause' : 'Resume';
+}
+
+// Copy
+function copyCmd(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1500);
+  });
+}
+
+// Init
+addLog('info', 'Notifyre Dashboard started');
+checkHealth();
+loadAll();
+setInterval(checkHealth, 15000);
+setInterval(loadAll, 20000);
+</script>
+</body>
+</html>
