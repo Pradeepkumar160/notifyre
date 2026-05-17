@@ -1,206 +1,370 @@
-<div align="center">
+# 🔔 Notifyre — Event-Driven Notification Engine
 
-<!-- HEADER -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00ff88,100:00cfff&height=200&section=header&text=Pradeep%20Kumar&fontSize=50&fontColor=ffffff&fontAlignY=38&desc=Full-Stack%20%7C%20Cybersecurity%20%7C%20AI%2FML%20%7C%20Cloud%20%26%20DevOps&descAlignY=58&descSize=16&animation=fadeIn" width="100%"/>
+> A production-ready microservices notification engine. Send emails and SMS at scale with automatic retries, dead-letter queues, full delivery tracking — all running in Docker with a beautiful web dashboard.
 
-<!-- TYPING ANIMATION -->
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Space+Mono&size=18&pause=1000&color=00FF88&center=true&vCenter=true&width=600&lines=Hey+there!+I'm+Pradeep+%F0%9F%91%8B;Full-Stack+Dev+%7C+Security+Researcher;AI%2FML+Engineer+%7C+Cloud+%26+DevOps;Building+secure+%26+intelligent+systems;Open+to+Internships+%26+Collaborations!)](https://git.io/typing-svg)
-
-<!-- CONNECT BADGES -->
-<br/>
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Pradeep%20Kumar-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/07pradeepk/)
-[![GitHub](https://img.shields.io/badge/GitHub-Pradeepkumar160-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Pradeepkumar160)
-[![Gmail](https://img.shields.io/badge/Gmail-pradeep16024%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:pradeep16024@gmail.com)
-
-<br/>
-
-</div>
+![Dashboard Preview](https://i.imgur.com/placeholder.png)
 
 ---
 
-## 🧑‍💻 About Me
+## ✨ Features
 
-```yaml
-name       : Pradeep Kumar
-username   : Pradeepkumar160
-location   : Punjab, India 🇮🇳
-education  : B.Tech CSE @ Lovely Professional University
+| Feature | Description |
+|---|---|
+| 📧 **Email & SMS** | Send via SendGrid (email) and Twilio (SMS) |
+| 🐰 **RabbitMQ** | Async message broker with direct exchanges |
+| 🔁 **Auto-retry** | Up to 3 attempts with 15s delay between retries |
+| 💀 **Dead Letter Queue** | Permanently failed messages tracked and logged |
+| 🗄️ **PostgreSQL** | Full event sourcing and audit trail |
+| 🧪 **DRY_RUN mode** | Test the full pipeline without real API keys |
+| 🐳 **Docker Compose** | One-command setup — no local installs needed |
+| 📊 **Web Dashboard** | Beautiful UI to send, monitor, and filter notifications |
+| 📈 **Scalable Workers** | Run multiple worker instances in parallel |
+| 📝 **Winston Logging** | Structured logs across all services |
 
-roles:
-  - 🔐 Cybersecurity Enthusiast
-  - 💻 Full-Stack Developer
-  - 🤖 AI/ML Engineer
-  - ☁️  Cloud & DevOps Engineer
+---
 
-currently_learning:
-  - Ethical Hacking & Penetration Testing
-  - LLMs & MLOps
-  - Kubernetes & Service Mesh
+## 🏗️ Architecture
 
-open_to:
-  - Remote Internships
-  - Open Source Collaborations
-  - CTF Challenges & Research
-
-motto: "The quieter you become, the more you are able to hear — in code and in security."
+```
+┌──────────────────────────────────────────────────────┐
+│                    CLIENT / DASHBOARD                │
+│              file:///path/to/dashboard.html          │
+└───────────────────────┬──────────────────────────────┘
+                        │ POST /api/notifications
+                        ▼
+          ┌─────────────────────────┐
+          │      API SERVICE        │
+          │   Express.js :5000      │
+          │  • Validates request    │
+          │  • Saves to PostgreSQL  │
+          │  • Publishes to MQ      │
+          └──────────┬──────────────┘
+                     │
+          ┌──────────▼──────────────┐
+          │        RABBITMQ         │
+          │   notification.exchange │
+          │  ┌──────────────────┐   │
+          │  │   email.queue    │   │
+          │  │   sms.queue      │   │
+          │  └──────────────────┘   │
+          └──────────┬──────────────┘
+                     │
+          ┌──────────▼──────────────┐
+          │     WORKER SERVICE      │
+          │  • Consumes messages    │
+          │  • SendGrid → Email     │
+          │  • Twilio → SMS         │
+          └──────────┬──────────────┘
+                     │ On failure (3 retries)
+          ┌──────────▼──────────────┐
+          │   DEAD LETTER SERVICE   │
+          │  • Logs failed events   │
+          │  • Marks DEAD_LETTERED  │
+          └─────────────────────────┘
 ```
 
 ---
 
-## 🚀 Featured Projects
+## 🚀 Quick Start
 
-<div align="center">
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and **running**
+- Git (optional, for cloning)
 
-| Project | Description | Stack | Stars |
-|--------|-------------|-------|-------|
-| [🔒 prompt-injection-security-lab](https://github.com/Pradeepkumar160/prompt-injection-security-lab) | Educational LLM security lab — real-world prompt injection attacks vs multi-layer defenses. Side-by-side vulnerable & secure chatbot. | `Python` `LLM` `Security` | ⭐ 1 |
-| [🛡️ IDS Web Application](https://github.com/Pradeepkumar160/IDS-Intrusion-Detection-System-WEB-APPLICATION-) | ML-powered real-time intrusion detection system with live Prometheus + Grafana dashboard | `Python` `Flask` `ML` | ⭐ 2 |
-| [⚡ AI DevOps Platform](https://github.com/Pradeepkumar160/ai-devops-platform) | Autonomous SRE platform — Llama3 AI chat, real-time monitoring, auto-healing alerts, fully containerized | `JS` `Python` `Docker` `K8s` | ⭐ 2 |
-| [🔑 Secure JWT Auth Microservice](https://github.com/Pradeepkumar160/Secure-JWT-Auth-Microservice) | Production-ready microservice with RBAC, email verification & brute-force protection | `TypeScript` `Node.js` `Docker` | ⭐ 2 |
-| [🖊️ SyncPad](https://github.com/Pradeepkumar160/syncpad) | Real-time collaborative document editor with CRDT conflict resolution, live sync & auto-save | `React` `Node.js` `Yjs` `Socket.io` | ⭐ 1 |
-| [🛡️ RateShield](https://github.com/Pradeepkumar160/RateShield) | Distributed rate limiter using Redis + Lua. Zero race conditions, horizontally scalable | `JavaScript` `Redis` `Lua` | ⭐ 1 |
-| [🧠 MindGuard AI](https://github.com/Pradeepkumar160/mindguard-ai) | NLP detection of suicidal ideation in social media — AI for social good | `Python` `NLP` `ML` | ⭐ 2 |
-| [☁️ Serverless To-Do (AWS)](https://github.com/Pradeepkumar160/Serverless-To-Do-List-Application-AWS-Cloud-Web-Development) | Lambda + API Gateway + DynamoDB with SAM templates. Auto-scaling serverless architecture | `AWS` `Lambda` `DynamoDB` | ⭐ 2 |
-| [🔐 AuthFlow API](https://github.com/Pradeepkumar160/authflow-api) | Secure role-based task management API with JWT auth, React frontend & Docker support | `TypeScript` `Node.js` `React` | ⭐ 2 |
-| [📱 Task Manager Flutter](https://github.com/Pradeepkumar160/task-manager-flutter-app) | Modern cross-platform Flutter app with dark UI, Riverpod state management & smooth animations | `Flutter` `Dart` `Riverpod` | ⭐ 2 |
+### 1. Clone the repository
 
-</div>
-
----
-
-## 🔐 Cybersecurity Focus
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  🔍 Intrusion Detection Systems (IDS)                           │
-│  🕵️  Network Traffic Analysis                                   │
-│  🔑 JWT Auth & Role-Based Access Control (RBAC)                 │
-│  🧪 Vulnerability Assessment                                    │
-│  🌐 Web Application Security (OWASP)                            │
-│  🔒 Prompt Injection Defense & LLM Security                     │
-│  🔐 Cryptography & Secure API Design                            │
-│  📡 OSINT & Threat Intelligence                                  │
-│  🐧 Linux Security & Hardening                                  │
-└─────────────────────────────────────────────────────────────────┘
+```bash
+git clone https://github.com/Pradeepkumar160/notifyre.git
+cd notifyre/notification-engine
 ```
 
-**Tools I use:**
+### 2. Configure environment (optional)
 
-![Kali Linux](https://img.shields.io/badge/Kali_Linux-557C94?style=flat-square&logo=kalilinux&logoColor=white)
-![Wireshark](https://img.shields.io/badge/Wireshark-1679A7?style=flat-square&logo=wireshark&logoColor=white)
-![Burp Suite](https://img.shields.io/badge/Burp_Suite-FF6633?style=flat-square&logo=burpsuite&logoColor=white)
-![Metasploit](https://img.shields.io/badge/Metasploit-2596CD?style=flat-square&logo=metasploit&logoColor=white)
-![Nmap](https://img.shields.io/badge/Nmap-0E83CD?style=flat-square&logo=nmap&logoColor=white)
-![OWASP](https://img.shields.io/badge/OWASP-000000?style=flat-square&logo=owasp&logoColor=white)
+Edit `.env` files in `api-service/` and `worker-service/` to add real API keys:
 
----
+| Variable | Service | Description |
+|---|---|---|
+| `SENDGRID_API_KEY` | worker-service | Your SendGrid API key |
+| `EMAIL_FROM` | worker-service | Verified sender email |
+| `TWILIO_SID` | worker-service | Twilio Account SID |
+| `TWILIO_TOKEN` | worker-service | Twilio Auth Token |
+| `TWILIO_PHONE` | worker-service | Twilio phone (E.164 format) |
 
-## 🛠️ Full Tech Stack
+> 💡 **No API keys?** Leave `DRY_RUN=true` in `worker-service/.env` — the full pipeline runs without sending real messages.
 
-**Languages**
+### 3. Build and start
 
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
-![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white)
-![Lua](https://img.shields.io/badge/Lua-2C2D72?style=flat-square&logo=lua&logoColor=white)
-![Bash](https://img.shields.io/badge/Bash-4EAA25?style=flat-square&logo=gnubash&logoColor=white)
+```bash
+docker compose up --build -d
+```
 
-**Frontend & Mobile**
+### 4. Fix the database schema (first time only)
 
-![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
-![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+```bash
+docker exec notifyre-api npx prisma db push --schema=/app/prisma/schema.prisma
+```
 
-**Backend & APIs**
+### 5. Open the dashboard
 
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-000000?style=flat-square&logo=flask&logoColor=white)
-![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=flat-square&logo=socketdotio&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
-![DynamoDB](https://img.shields.io/badge/DynamoDB-4053D6?style=flat-square&logo=amazondynamodb&logoColor=white)
+Open `dashboard.html` in Chrome using this command (Windows):
 
-**Cloud & DevOps**
-
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonaws&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
-![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white)
-![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
-
-**AI & ML**
-
-![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)
-![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21E?style=flat-square&logo=huggingface&logoColor=black)
-![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat-square&logo=ollama&logoColor=white)
+```powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir="C:\ChromeDev" "C:\path\to\notifyre\dashboard.html"
+```
 
 ---
 
-## 📊 GitHub Stats
+## 📊 Web Dashboard
 
-<div align="center">
+The project includes a fully-featured web dashboard (`dashboard.html`) that connects to the API at `localhost:5000`.
 
-<img src="https://github-readme-stats.vercel.app/api?username=Pradeepkumar160&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0d1117&title_color=00ff88&icon_color=00cfff&text_color=c9d1d9" height="170"/>
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Pradeepkumar160&layout=compact&theme=tokyonight&hide_border=true&bg_color=0d1117&title_color=00ff88&text_color=c9d1d9" height="170"/>
+### Dashboard — Overview & Quick Send
+> View real-time stats (total, pending, delivered, failed) and send notifications instantly.
 
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=Pradeepkumar160&theme=tokyonight&hide_border=true&background=0d1117&ring=00ff88&fire=00cfff&currStreakLabel=00ff88" width="49%"/>
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🔔 Notifyre                              ● API online      │
+├──────────┬──────────────────────────────────────────────────┤
+│          │  TOTAL    PENDING    DELIVERED    FAILED         │
+│ Dashboard│   12        2           9           1            │
+│          ├─────────────────────┬────────────────────────────┤
+│ Send     │  Quick send         │  Recent activity           │
+│          │  ┌───────┬────────┐ │  email  test@ex..  SENT   │
+│ History  │  │ Email │ recip..│ │  sms    +91987..   PEND   │
+│          │  └───────┴────────┘ │  email  user@ex..  SENT   │
+│ Logs     │  [message.......  ] │                            │
+│          │  [ Send Notification] │                          │
+│ Config   │                     │                            │
+└──────────┴─────────────────────┴────────────────────────────┘
+```
 
-</div>
+### History — Filter & Search
+> Browse all notifications with filter by status, type, and search by recipient or message.
+
+### Live Logs — Real-time Stream
+> See every API call, send attempt, retry, and error in real time with pause/clear controls.
+
+### API Config — Reference & Commands
+> All endpoints listed, service URLs, and Docker commands with one-click copy.
 
 ---
 
-## 🎯 2026 Goals
+## 📡 API Reference
 
-| # | Goal | Target | Status |
-|---|------|--------|--------|
-| 🏅 | AWS Solutions Architect Certification | SAA-C03 + Security Specialty | ⬜ In Progress |
-| 🔐 | Compete in 15+ CTF competitions & publish write-ups | 15 CTFs | ⬜ In Progress |
-| 🌟 | Reach 250 GitHub stars across projects | 250 ⭐ | ⬜ In Progress |
-| 🤝 | Convert internship into return offer / referral | Full-time / referral | ⬜ In Progress |
-| 📝 | Publish 12 technical blogs on security & AI | 1 per month | ⬜ In Progress |
-| 🚀 | Ship v1.0 of open-source security tool | Stable release + docs | ⬜ In Progress |
+Base URL: `http://localhost:5000`
 
----
+### Send a notification
+```http
+POST /api/notifications
+Content-Type: application/json
 
-## 💡 Currently Working On
-
-```python
-current_focus = {
-    "🔐 Security"   : "Advanced IDS with deep packet inspection",
-    "🤖 AI/ML"      : "Fine-tuning LLMs for DevOps automation",
-    "☁️  Cloud"     : "AWS Solutions Architect certification",
-    "📚 Learning"   : "Kubernetes, Ethical Hacking, CTF challenges",
-    "🤝 Open Source": "Contributing to security & AI tooling"
+{
+  "type": "email",
+  "recipient": "user@example.com",
+  "message": "Hello from Notifyre!"
 }
 ```
 
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Notification queued successfully",
+  "eventId": "b41ec8e6-445a-43c8-831d-ff1e10e27f8d",
+  "type": "email",
+  "recipient": "user@example.com",
+  "status": "PENDING"
+}
+```
+
+### List notifications
+```http
+GET /api/notifications?status=SENT&type=email&limit=20
+```
+
+### Get by ID
+```http
+GET /api/notifications/:id
+```
+
+### Health check
+```http
+GET /health
+```
+
 ---
 
-## 🤝 Let's Connect!
+## 📬 Test with PowerShell
 
-<div align="center">
+```powershell
+# Send email notification
+Invoke-WebRequest -Uri "http://localhost:5000/api/notifications" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"type":"email","recipient":"test@example.com","message":"Hello from Notifyre!"}' `
+  -UseBasicParsing
 
-[![LinkedIn](https://img.shields.io/badge/Connect%20on-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/07pradeepk/)
-[![GitHub](https://img.shields.io/badge/Follow%20on-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Pradeepkumar160)
-[![Email](https://img.shields.io/badge/Mail%20Me-pradeep16024%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:pradeep16024@gmail.com)
+# Send SMS notification
+Invoke-WebRequest -Uri "http://localhost:5000/api/notifications" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"type":"sms","recipient":"+919876543210","message":"Your OTP is 998877"}' `
+  -UseBasicParsing
 
-<br/>
+# List all notifications
+Invoke-WebRequest -Uri "http://localhost:5000/api/notifications" -UseBasicParsing
+```
 
-💬 I love connecting with developers, security researchers, and AI enthusiasts!  
-Feel free to reach out — always happy to collaborate. 🚀
+---
 
-<br/>
+## 📊 Notification Status Flow
 
-> *"The quieter you become, the more you are able to hear — in code and in security."*
+```
+PENDING ──────────────────────► SENT          ✅ Success
+   │
+   └──► RETRYING (attempt 1)
+            │
+            └──► RETRYING (attempt 2)
+                      │
+                      └──► RETRYING (attempt 3)
+                                │
+                                ├──► SENT      ✅ Recovered
+                                │
+                                └──► DEAD_LETTERED  ❌ Permanently failed
+```
 
-<br/>
+---
 
-⭐ **Star my repos if you find them useful — it keeps me motivated to build more!**
+## 🐳 Docker Services
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00cfff,100:00ff88&height=100&section=footer" width="100%"/>
+| Container | Image | Port | Description |
+|---|---|---|---|
+| `notifyre-api` | Node.js 20 | 5000 | REST API service |
+| `notifyre-worker` | Node.js 20 | — | Notification processor |
+| `notifyre-dlq` | Node.js 20 | — | Dead letter handler |
+| `notifyre-rabbitmq` | rabbitmq:3-management | 5672, 15672 | Message broker |
+| `notifyre-postgres` | postgres:15 | 5432 | Database |
 
-</div>
+---
+
+## 🐰 RabbitMQ Management UI
+
+Open **http://localhost:15672** in your browser.
+
+- Login: `guest` / `guest`
+- View queues: `email.queue`, `sms.queue`, `retry.queue`, `dead.letter.queue`
+- Monitor message rates and consumer counts in real time
+
+---
+
+## 🔧 Useful Commands
+
+```powershell
+# Start all services
+docker compose up -d
+
+# Stop all services
+docker compose down
+
+# Stop and delete all data
+docker compose down -v
+
+# View API logs live
+docker compose logs -f api-service
+
+# View worker logs live
+docker compose logs -f worker-service
+
+# Restart a single service
+docker compose restart worker-service
+
+# Scale workers (run 3 parallel workers)
+docker compose up --scale worker-service=3 -d
+
+# Check container status
+docker compose ps
+```
+
+---
+
+## 📁 Project Structure
+
+```
+notifyre/
+├── dashboard.html                  ← Web dashboard (open in browser)
+├── Start-Notifyre.ps1              ← PowerShell setup script
+└── notification-engine/
+    ├── docker-compose.yml          ← All services definition
+    ├── api-service/
+    │   ├── src/
+    │   │   ├── config/
+    │   │   │   ├── database.js     ← Prisma connection
+    │   │   │   └── rabbitmq.js     ← RabbitMQ connection
+    │   │   ├── controllers/
+    │   │   │   └── notificationController.js
+    │   │   ├── routes/
+    │   │   │   ├── notificationRoutes.js
+    │   │   │   └── healthRoutes.js
+    │   │   ├── services/
+    │   │   │   ├── publisher.js    ← Publishes to RabbitMQ
+    │   │   │   └── eventService.js ← PostgreSQL operations
+    │   │   └── utils/logger.js
+    │   ├── prisma/schema.prisma    ← Database schema
+    │   ├── Dockerfile
+    │   └── .env
+    ├── worker-service/
+    │   ├── src/
+    │   │   ├── providers/
+    │   │   │   ├── sendgridProvider.js ← Email sending
+    │   │   │   └── twilioProvider.js   ← SMS sending
+    │   │   └── utils/logger.js
+    │   ├── worker.js               ← Main consumer
+    │   ├── prisma/schema.prisma
+    │   ├── Dockerfile
+    │   └── .env
+    └── dead-letter-service/
+        ├── src/dlq.js              ← DLQ consumer
+        ├── Dockerfile
+        └── .env
+```
+
+---
+
+## 🔐 Production Checklist
+
+- [ ] Set `DRY_RUN=false` and add real SendGrid + Twilio API keys
+- [ ] Add JWT/API key authentication middleware
+- [ ] Add rate limiting (`express-rate-limit`)
+- [ ] Use Docker secrets or HashiCorp Vault for credentials
+- [ ] Set up HTTPS with a reverse proxy (nginx)
+- [ ] Add Prometheus + Grafana monitoring
+- [ ] Configure RabbitMQ with persistent credentials
+- [ ] Set up automated database backups
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| API | Node.js, Express.js |
+| Message Broker | RabbitMQ 3 |
+| Database | PostgreSQL 15 |
+| ORM | Prisma |
+| Email | SendGrid |
+| SMS | Twilio |
+| Logging | Winston |
+| Containerization | Docker, Docker Compose |
+| Dashboard | Vanilla HTML/CSS/JS |
+
+---
+
+## 👨‍💻 Author
+
+**Pradeepkumar** — [GitHub](https://github.com/Pradeepkumar160)
+
+---
+
+## 📄 License
+
+MIT License — feel free to use, modify, and distribute.
