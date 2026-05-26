@@ -126,7 +126,7 @@ The project includes a fully-featured web dashboard (`dashboard.html`) that conn
 ### Dashboard — Overview & Quick Send
 > View real-time stats (total, pending, delivered, failed) and send notifications instantly.
 
-```
+``` 
 ┌─────────────────────────────────────────────────────────────┐
 │  🔔 Notifyre                              ● API online      │
 ├──────────┬──────────────────────────────────────────────────┤
