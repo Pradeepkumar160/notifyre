@@ -1,4 +1,4 @@
-# 🔔 Notifyre — Event-Driven Notification Engine    
+# 🔔 Notifyre — Event-Driven Notification Engine   
 
 > A production-ready microservices notification engine. Send emails and SMS at scale with automatic retries, dead-letter queues, full delivery tracking — all running in Docker with a beautiful web dashboard.
 
